@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:bezier/bezier.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:vector_math/vector_math.dart' as classic_vectors;
+import 'package:track_tool/util/vector_conversion.dart';
 
 class CurvyLineSegment extends PolygonComponent {
   final List<Vector2> points;
@@ -49,17 +49,5 @@ class CurvyLineSegment extends PolygonComponent {
     finalPoints.addAll(rightPoints.reversed);
 
     return finalPoints;
-  }
-}
-
-extension VectorConversion on classic_vectors.Vector2 {
-  Vector2 convert() {
-    return Vector2(x, y);
-  }
-}
-
-extension OtherVectorConversion on Vector2 {
-  classic_vectors.Vector2 convert() {
-    return classic_vectors.Vector2(x, y);
   }
 }

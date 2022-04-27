@@ -17,6 +17,7 @@ void main() async {
     await windowManager.setTitleBarStyle(TitleBarStyle.hidden,
         windowButtonVisibility: false);
     await windowManager.center();
+    await windowManager.show();
   });
 
   runApp(const MyApp());

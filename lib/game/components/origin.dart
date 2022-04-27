@@ -16,7 +16,8 @@ class OriginMarker extends SvgComponent with HasGameRef<RideEditorViewport> {
     //position = Vector2.all(100);
     //size = Vector2.all(100);
     // Set our size to something nominal
-    size = Vector2(200, 200);
+    size = Vector2.all(256);
+    scale = Vector2.all(0.5);
     // Center on the screen
     anchor = Anchor.center;
   }
