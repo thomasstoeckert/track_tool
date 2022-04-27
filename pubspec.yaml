@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  bezier: ^1.2.0
   flame: ^1.1.1
   flame_svg: ^1.2.0
   fluent_ui: ^3.11.0
