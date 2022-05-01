@@ -1,69 +1,66 @@
 import 'package:bezier/bezier.dart';
 import 'package:flame/components.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:track_tool/data/spline_point.dart';
 import 'package:track_tool/util/vector_conversion.dart';
 
-class SplineSegmentComponent extends PositionComponent {
-  List<Vector2> points;
+class SplineSegmentComponent extends PolygonComponent {
+  late List<SplinePoint> controlPoints;
   double thickness;
 
-  SplineSegmentComponent(this.points, {this.thickness = 5.0});
+  final List<Vector2> _points = [];
 
-  late PolygonComponent segmentRenderer;
-
-  @override
-  Future<void>? onLoad() async {
-    await super.onLoad();
-
-    // Create our child, the spline segment renderer
-    List<Vector2> polyPoints = calculateSplinePoints(points, thickness);
-    segmentRenderer = PolygonComponent(polyPoints,
-        paint: Paint()..color = const Color(0xffe5c069));
-
-    add(segmentRenderer);
-  }
+  SplineSegmentComponent(this.controlPoints, {this.thickness = 5.0})
+      : assert(controlPoints.length == 2),
+        super(_calculateSplinePoints(_assignPoints(controlPoints), thickness),
+            paint: Paint()..color = const Color(0xffe5c069));
 
   void refreshPoints() {
     if (!isLoaded) return;
 
-    List<Vector2> polyPoints = calculateSplinePoints(points, thickness);
-    remove(segmentRenderer);
-    segmentRenderer = PolygonComponent(polyPoints,
-        paint: Paint()..color = const Color(0xffe5c069));
-    add(segmentRenderer);
+    refreshVertices(
+        newVertices:
+            _calculateSplinePoints(_assignPoints(controlPoints), thickness));
   }
 
-  static List<Vector2> calculateSplinePoints(
+  static List<Vector2> _assignPoints(List<SplinePoint> controlPoints) {
+    return [
+      controlPoints.first.point,
+      (controlPoints.first.handles?.last ?? Vector2.zero()) +
+          controlPoints.first.point,
+      (controlPoints.last.handles?.first ?? Vector2.zero()) +
+          controlPoints.last.point,
+      controlPoints.last.point
+    ];
+  }
+
+  static List<Vector2> _calculateSplinePoints(
       List<Vector2> controlPoints, double thickness) {
     // Step 1: Create the spline
     final CubicBezier bezier =
         CubicBezier(controlPoints.map((e) => e.convert()).toList());
 
-    // Step 2: Build a list of evenly-spaced Ts along the segment, with tangents
-    final EvenSpacer spacer = EvenSpacer.fromBezier(bezier);
-    final List<double> evenTs = spacer.evenTValues(parametersCount: 9);
-
-    // -- Calculate derivative stuff once for efficiency
-    final pointsCache = bezier.derivativePoints();
-    final List<Vector2> normals = evenTs
+    // Step 2: Build evenly-spaced list, alongside normals
+    final List<double> spacedPoints =
+        EvenSpacer.fromBezier(bezier).evenTValues(parametersCount: 20);
+    final firstOrderDerivCache = bezier.derivativePoints();
+    final List<Vector2> normals = spacedPoints
         .map((e) => bezier
-            .normalAt(e, cachedFirstOrderDerivativePoints: pointsCache)
+            .normalAt(e, cachedFirstOrderDerivativePoints: firstOrderDerivCache)
             .convert())
         .toList();
 
     // Step 3: Calculate left/right points
     final List<Vector2> leftPoints = [], rightPoints = [];
-    for (int i = 0; i < evenTs.length; i++) {
-      double tValue = evenTs[i];
-      Vector2 normal = normals[i];
 
-      // Get the point information at that... point
-      Vector2 pointData = bezier.pointAt(tValue).convert();
-
-      // Calculate the points by adding / subtracting the scaled normals
-      // to the point data
-      leftPoints.add(pointData + normal.scaled(thickness));
-      rightPoints.add(pointData - normal.scaled(thickness));
+    for (int i = 0; i < spacedPoints.length; i++) {
+      // Get the value at that given point
+      double t = spacedPoints[i];
+      Vector2 pointOffset = bezier.offsetPointAt(t, thickness).convert();
+      Vector2 pointOtherOffset = bezier.offsetPointAt(t, -thickness).convert();
+      // Create the left/right values
+      leftPoints.add(pointOffset);
+      rightPoints.add(pointOtherOffset);
     }
 
     // Step 4: Assemble into final list - add in clockwise order

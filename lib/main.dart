@@ -11,14 +11,16 @@ void main() async {
 
   SystemTheme.accentColor.load();
 
-  await flutter_acrylic.Window.initialize();
-  await WindowManager.instance.ensureInitialized();
-  windowManager.waitUntilReadyToShow().then((_) async {
-    await windowManager.setTitleBarStyle(TitleBarStyle.hidden,
-        windowButtonVisibility: false);
-    await windowManager.center();
-    await windowManager.show();
-  });
+  if (!kIsWeb) {
+    await flutter_acrylic.Window.initialize();
+    await WindowManager.instance.ensureInitialized();
+    windowManager.waitUntilReadyToShow().then((_) async {
+      await windowManager.setTitleBarStyle(TitleBarStyle.hidden,
+          windowButtonVisibility: false);
+      await windowManager.center();
+      await windowManager.show();
+    });
+  }
 
   runApp(const MyApp());
 }

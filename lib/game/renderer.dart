@@ -8,7 +8,11 @@ import 'package:track_tool/game/components/origin.dart';
 import 'package:track_tool/game/components/spline/spline_component.dart';
 
 class RideEditorViewport extends FlameGame
-    with PanDetector, ScrollDetector, TapDetector {
+    with
+        PanDetector,
+        ScrollDetector,
+        TapDetector, //,
+        HasDraggables /* HasHoverables */ {
   //late Player player;
   //late Player anotherPlayer;
 
@@ -29,11 +33,14 @@ class RideEditorViewport extends FlameGame
 
     cameraFocus = PositionComponent(position: size / 2, anchor: Anchor.center);
     camera.followComponent(cameraFocus);
+
     primarySpline = Spline.fromPoints([
       SplinePoint.withHandles(Vector2(100, 100), handleScale: 45.0),
       SplinePoint.withHandles(Vector2(200, 200), handleScale: 45.0)
     ]);
+
     splineComponent = SplineComponent(Vector2.zero(), primarySpline);
+
     fpsLabel = TextComponent(
         text: textComponentLabel,
         position: Vector2(0 + 10, size.y),
@@ -41,7 +48,7 @@ class RideEditorViewport extends FlameGame
       ..positionType = PositionType.viewport;
 
     add(Background());
-    add(OriginMarker());
+    //add(OriginMarker());
     add(splineComponent);
     add(cameraFocus);
     add(fpsLabel);

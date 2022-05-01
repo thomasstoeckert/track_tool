@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flame/components.dart';
 
 class SplinePoint {
@@ -9,18 +7,17 @@ class SplinePoint {
   ///
   /// Create a spline point with a given point and some handles
   ///
-  SplinePoint(this.point, {this.handles});
+  SplinePoint(this.point, {this.handles}) : assert((handles?.length ?? 2) == 2);
 
   ///
   /// Create a spline point with a given point and create handles at distance
   ///
   SplinePoint.withHandles(this.point, {double handleScale = 5.0})
-      : handles = [
-          point + Vector2(-1 * handleScale, 0),
-          point + Vector2(1 * handleScale, 0)
-        ] {
-    print(
-        "New point: $point, left handle: ${handles![0]}, right handle: ${handles![1]}");
+      : handles = [Vector2(-1 * handleScale, 0), Vector2(1 * handleScale, 0)];
+
+  @override
+  String toString() {
+    return point.toString();
   }
 
   // TODO: Deserialization/serialization
